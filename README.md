@@ -1,36 +1,26 @@
 # Hire ME ANGHAMI
-- download ANGHAMI songs easily
+- download anghami songs easily on a backend that's built to scale to the moon 🚀📈🌕
+- Uses Elixir and Redis Worker Queues fully distributed out of the box. (why? I am gonna run this on a 5$ VPS alsan lol)
 
-## Venator (core selenuim download songs and stuff)
+## Venator
 
 #### Requirements:
 - needs to share a `songs` DIR with Spectre service
 - needs to have `geckodriver` configured to run headless
 
-#### Procedures 
-- look inside the creds/*_user.pkl and pick one for cookies every 60s
-- get the download link
-- download it and save it to a folder 
-- send the download link to the Main Backend Service
+#### API
+- publish a message that looks like `{"song_url":"https://play.anghami.com/song/25770989"}` to channel `download_requests`
+- subscribe to `downloaded_songs` and wait for the `25770989` (songID) to be published
+- the song should be located in the `SONG_DIR_PATH` like `Anghami_25770989.mp3`
 
-## Spectre (main backend service)
+## Omen (main backend service)
 - get the song URL from the user
 - put it in a work queue
 - monitor the status of the job and when it finishes return (or emit lol) the download link
 - store how much something gets downloaded in redis with it's songID
 - if the songs/ dir gets too big delete the song with the least downloads (if multiple just pick randomly)
-
-## Omen (the frontend):
-- just a single page with an enter song URL box
-- with app instructions t7t
 - and some funny things about HMU spotify and hey anghami call me
 
+also put a rant there about how you would rather it worked by having omen enque jobs rather than publishing to redis
 
-## References/Tech to look at 
-Elixr Redis Jobs: https://github.com/akira/exq
-Selenuim driver for elxir: https://hexdocs.pm/hound/readme.html
-
-
-## MSC
-- redis (for worker queues) and Key Value storage (needs to be persistent with a `data/` dir)
-- contact this guy: https://github.com/Almo7aya
+(does it actually make sense to download the songs and keep them?)
