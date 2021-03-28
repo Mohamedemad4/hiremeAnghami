@@ -11,6 +11,7 @@ SETUP
 '''
 
 import os
+import json
 import time
 import pickle
 import random
@@ -75,12 +76,14 @@ class SongDownloader():
 
     def download_song(self,song_url): # todo: checks to see if we already downloaded a songs and checks to remove the least downloaded one if it gets too tight
 
-        self._set_cookies("config/secrets/cookies.pkl") # todo randomly choose a cookie Jar
+        self._set_cookies("config/secrets/cookies.pkl") # todo randomly choose a cookie Jar. NOTE it has to be a seperate cookie jar per worker, 2 workers can't use the same cookie jar at the same time
         
         self.browser.get(song_url)
         media_url = self._press_play_and_get_MediaLink()
         self._download_media(media_url,song_url)
 
-        redis_conn.publish('downloaded_songs',self._getSongIDFromURL(song_url))
+        redis_conn.publish('downloaded_songs',json.dumps({
+            "song_media_name":'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3'
+        }))
         # todo save how many times a song was requested in redis
         return True

@@ -1,6 +1,6 @@
 # Hire ME ANGHAMI
 - download anghami songs easily on a backend that's built to scale to the moon 🚀📈🌕
-- Uses Elixir and Redis Worker Queues fully distributed out of the box. (why? I am gonna run this on a 5$ VPS alsan lol)
+- Uses Elixir, Redis Pub/sub and worker queues. Fully distributed out of the box! (why? I am gonna run this on a $5 VPS alsan lol)
 
 ## Venator
 
@@ -10,10 +10,10 @@
 
 #### API
 - publish a message that looks like `{"song_url":"https://play.anghami.com/song/25770989"}` to channel `download_requests`
-- subscribe to `downloaded_songs` and wait for the `25770989` (songID) to be published
-- the song should be located in the `SONG_DIR_PATH` like `Anghami_25770989.mp3`
+- subscribe to `downloaded_songs` and wait for a job completion message that should look like  `{"song_media_name":"Anghami_25770989.mp3"}` to be published
+- the song should be located in the `SONG_DIR_PATH` under the name of the `song_media_name` param
 
-## Omen (main backend service)
+## Omen
 - get the song URL from the user
 - put it in a work queue
 - monitor the status of the job and when it finishes return (or emit lol) the download link
