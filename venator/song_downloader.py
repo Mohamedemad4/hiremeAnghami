@@ -26,21 +26,36 @@ class SongDownloader():
             'backend': 'mitmproxy'
         })
 
-        self._set_cookies("config/secrets/cookies.pkl")
         self.song_dir_path = os.getenv("SONG_DIR_PATH")
+        self.browser.get('https://play.anghami.com/') # can't set cookies in an empty document
+        self.current_cookie_jar = False
 
     def _set_cookies(self,cookie_jar):
 
-        self.browser.get('https://play.anghami.com/') # can't set cookies in an empty document
-
+        # remove the .inuse from the old jar
+        if self.current_cookie_jar:
+            os.rename(self.current_cookie_jar+'.inuse',self.current_cookie_jar)
+            
         try:
             cookies = pickle.load(open(cookie_jar, "rb"))
         except IOError:
-            raise "Couldn't find cookie jar: "+cookie_jar
+            raise BaseException("Couldn't find cookie jar: "+cookie_jar)
 
         for cookie in cookies:
             self.browser.add_cookie(cookie)
+        
+        # add an inuse to the new one. since 2 workers can't share the same cookie jar at the same time
+        os.rename(cookie_jar,cookie_jar+'.inuse')
+        self.current_cookie_jar = cookie_jar
 
+    def _pick_cookie_jar(self):
+        '''
+        Pick a new cookie jar for us to use with each request
+        '''
+        all_cookie_jars = os.listdir("config/secrets") 
+        free_cookie_jars = [os.path.join("config/secrets",i) for i in all_cookie_jars if i.endswith(".pkl")]
+        return random.choice(free_cookie_jars)
+ 
     # gotta refresh after setting the cookies 
     def _press_play_and_get_MediaLink(self):
         while True:
@@ -75,9 +90,9 @@ class SongDownloader():
         return True
 
     def download_song(self,song_url): # todo: checks to see if we already downloaded a songs and checks to remove the least downloaded one if it gets too tight
-
-        self._set_cookies("config/secrets/cookies.pkl") # todo randomly choose a cookie Jar. NOTE it has to be a seperate cookie jar per worker, 2 workers can't use the same cookie jar at the same time
         
+        self._set_cookies(self._pick_cookie_jar()) 
+
         self.browser.get(song_url)
         media_url = self._press_play_and_get_MediaLink()
         self._download_media(media_url,song_url)
