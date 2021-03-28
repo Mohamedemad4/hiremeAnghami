@@ -12,6 +12,10 @@ from config.download_song_queue import download_song_queue
 print("Subcribing to download_requests")
 redis_conn_sub.subscribe('download_requests')
 
+# remove the '.inuse' from all cookie jars from the prev. session
+inuse_cookie_jars = [cookie_jar for cookie_jar in os.listdir('config/secrets') if "inuse" in cookie_jar]
+[os.rename("config/secrets/"+cookie_jar,"config/secrets/"+cookie_jar.replace('.inuse','')) for cookie_jar in inuse_cookie_jars]
+
 while True:
     msg = redis_conn_sub.get_message()
     if msg:
