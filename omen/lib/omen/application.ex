@@ -10,10 +10,11 @@ defmodule Omen.Application do
       # Start the Telemetry supervisor
       OmenWeb.Telemetry,
       # Start the PubSub system
-      {Phoenix.PubSub, name: Omen.PubSub},
+      {Phoenix.PubSub, [name: Omen.PubSub, adapter: Phoenix.PubSub.PG2]},
       # Start the Endpoint (http/https)
       OmenWeb.Endpoint,
-      OmenWeb.Redix
+      OmenWeb.Redix,
+      OmenWeb.RedisPubSubAdapter
       # Start a worker by calling: Omen.Worker.start_link(arg)
       # {Omen.Worker, arg}
     ]
