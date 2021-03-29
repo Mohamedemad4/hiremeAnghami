@@ -98,7 +98,8 @@ class SongDownloader():
         self._download_media(media_url,song_url)
 
         redis_conn.publish('downloaded_songs',json.dumps({
-            "song_media_name":'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3'
+            "song_media_name":'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3',
+            "song_id":self._getSongIDFromURL(song_url)
         }))
         # todo save how many times a song was requested in redis
         return True
