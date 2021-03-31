@@ -16,7 +16,6 @@ RUN mix local.hex --force \
 
 COPY . .
 
-# using multistage builds is a mootpoint
 RUN cd assets && rm -rf node_modules && npm install 
 RUN npm run deploy --prefix assets/
 RUN mix phx.digest 

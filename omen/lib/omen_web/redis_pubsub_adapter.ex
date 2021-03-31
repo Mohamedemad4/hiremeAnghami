@@ -38,7 +38,7 @@ defmodule OmenWeb.RedisPubSubAdapter do
         IO.inspect(message)
       else
 
-        IO.puts("OMEN subscribed to downloaded_songs channel")
+        IO.puts("subscribed to downloaded_songs channel")
 
       end
 

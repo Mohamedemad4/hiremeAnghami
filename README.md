@@ -8,7 +8,7 @@
 - [Phoenix Live View](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html)
 - [Elixir Redix](https://github.com/whatyouhide/redix)
 - [selenium](https://github.com/SeleniumHQ/selenium)
-
+- [Docker](https://docker.com/)
 
 # Services 
 
