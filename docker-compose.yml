@@ -1,0 +1,45 @@
+#                   COMPOSE 
+#            ___      ___      ___  
+#           / * \    / * \    / * \  
+#           | * |    | * |    | * | 
+#           | * |    | * |    | * | 
+#           \ * /    \ * /    \ * /  
+#            ‾‾‾      ‾‾‾      ‾‾‾  
+#
+
+services:
+
+  omen:
+    environment:
+      - SONG_DIR_PATH=/songs
+      - REDIS_HOST=redis
+    build: ./omen
+    
+    depends_on:
+        redis:
+          condition: service_started
+
+    ports:
+      - "4000:4000"
+    volumes:
+      - ~/songs:/songs
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+  venator:
+    environment:
+      - SONG_DIR_PATH=/songs
+      - REDIS_HOST=redis
+    build: ./venator
+
+    depends_on:
+        redis:
+          condition: service_started
+          
+    privileged: true # for selenium 
+    volumes:
+      - ~/songs:/songs
+    

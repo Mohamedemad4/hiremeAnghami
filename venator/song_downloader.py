@@ -17,11 +17,17 @@ import pickle
 import random
 import requests
 from seleniumwire import webdriver
+from pyvirtualdisplay import Display
 from config.redis_conn import redis_conn
 
 class SongDownloader():
     def __init__(self):
         
+        # start virtual display for selenium
+        # https://github.com/dimmg/dockselpy
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
+
         self.browser = webdriver.Firefox(seleniumwire_options = {
             'backend': 'mitmproxy'
         })
