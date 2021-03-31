@@ -27,7 +27,6 @@ defmodule OmenWeb.PageLive do
     {:noreply,assign(socket,done_state: done_state)}
   end
 
-  @impl true
   defp getSongIDFromURL(song_url) do
     String.split(song_url,"/") |> Enum.at(-1)
   end

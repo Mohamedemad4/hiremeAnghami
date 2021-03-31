@@ -5,7 +5,11 @@ defmodule OmenWeb.Redix do
     # Specs for the Redix connections.
     children =
       for index <- 0..(@pool_size - 1) do
-        Supervisor.child_spec({Redix, name: :"redix_#{index}"}, id: {Redix, index})
+        Supervisor.child_spec(
+         {Redix, name: :"redix_#{index}"},
+         id: {Redix, index},
+         start: {Redix,:start_link,["redis://"<>get_redis_host()<>":6379/1"]}
+        )
       end
 
     # Spec for the supervisor that will supervise the Redix connections.
@@ -23,4 +27,9 @@ defmodule OmenWeb.Redix do
   defp random_index() do
     Enum.random(0..@pool_size - 1)
   end
+
+  defp get_redis_host() do
+    System.get_env("REDIS_HOST","localhost")
+  end
+
 end

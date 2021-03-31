@@ -9,7 +9,7 @@ use Mix.Config
 
 # Configures the endpoint
 config :omen, OmenWeb.Endpoint,
-  url: [host: "localhost"],
+  url: [host: "0.0.0.0"],
   secret_key_base: "99P+3UorGMZE513x2n/VCsyLRt1iha12pcVC6r7sv1RDifbt9QpTMeayrwxK5AVl",
   render_errors: [view: OmenWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Omen.PubSub,
