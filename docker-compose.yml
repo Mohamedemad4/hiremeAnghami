@@ -22,7 +22,7 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - ~/songs:/songs
+      - ~/songs:/app/priv/static/songs
 
   redis:
     image: redis
