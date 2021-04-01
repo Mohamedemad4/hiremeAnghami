@@ -85,9 +85,7 @@ class SongDownloader():
         return False
     
     def _getSongIDFromURL(self,song_url): # used internally to keep track of different songs and stuff 
-        if song_url.endswith('/'):
-            return song_url.split('/')[len(song_url).split('/')-2]
-        return song_url.split('/')[-1]
+        return song_url.split('/')[4]
 
     def _download_media(self,media_url,song_url):
         song_media_bytes = requests.get(media_url).content

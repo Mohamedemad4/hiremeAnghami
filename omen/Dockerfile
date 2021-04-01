@@ -18,6 +18,5 @@ COPY . .
 
 RUN cd assets && rm -rf node_modules && npm install 
 RUN npm run deploy --prefix assets/
-RUN mix phx.digest 
 
 CMD ["mix","phx.server"]
