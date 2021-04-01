@@ -6,9 +6,11 @@ defmodule OmenWeb.Redix do
     children =
       for index <- 0..(@pool_size - 1) do
         Supervisor.child_spec(
-         {Redix, name: :"redix_#{index}"},
-         id: {Redix, index},
-         start: {Redix,:start_link,["redis://"<>get_redis_host()<>":6379/1"]}
+          {
+            Redix,
+            {"redis://"<>get_redis_host()<>":6379/1",[name: :"redix_#{index}"]}
+          },
+          id: {Redix,index}
         )
       end
 

@@ -19,13 +19,9 @@ defmodule OmenWeb.RedisPubSubAdapter do
   end
 
   def init(:ok) do
-      names = %{}
-      refs = %{}
-
-      {:ok, pubsub} = Redix.PubSub.start_link()
-      Redix.PubSub.subscribe(pubsub, "downloaded_songs", self())
-
-      {:ok, {names, refs}}
+    {:ok, pubsub} = Redix.PubSub.start_link()
+    Redix.PubSub.subscribe(pubsub, "downloaded_songs", self())
+    {:ok, {}}
   end
 
   def handle_info(msg, state) do
