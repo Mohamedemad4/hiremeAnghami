@@ -20,7 +20,7 @@ defmodule OmenWeb.RedisPubSubAdapter do
 
   @impl true
   def init(:ok) do
-    {:ok, pubsub} = Redix.PubSub.start_link()
+    {:ok, pubsub} = Redix.PubSub.start_link("redis://"<>get_redis_host()<>":6379/1")
     Redix.PubSub.subscribe(pubsub, "downloaded_songs", self())
     {:ok, {pubsub}}
   end
@@ -49,4 +49,9 @@ defmodule OmenWeb.RedisPubSubAdapter do
 
     {:noreply, state}
   end
+
+  defp get_redis_host() do
+    System.get_env("REDIS_HOST","localhost")
+  end
+
 end
