@@ -3,7 +3,7 @@ defmodule OmenWeb.PageLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, song_url: "",done_state: "Enter the song url")}
+    {:ok, assign(socket, song_url: "",song_media_name: "",done_state: "ENTER_STH")}
   end
 
   @impl true
@@ -15,9 +15,9 @@ defmodule OmenWeb.PageLive do
       get_songID_from_URL(song_url) |> OmenWeb.Endpoint.subscribe()
       # when a message is recv. here handle_info is called to update the liveView (our Erlang process here is subscribed)
 
-      {:noreply, assign(socket, song_url: song_url,done_state: "IN PROGRESS")}
+      {:noreply, assign(socket, song_url: song_url,done_state: "IN_PROGRESS")}
     else
-      {:noreply, assign(socket, song_url: song_url,done_state: "Hmmm... this link doesn't look right")}
+      {:noreply, assign(socket, song_url: song_url,done_state: "ERROR")}
     end
   end
 
@@ -25,8 +25,9 @@ defmodule OmenWeb.PageLive do
   @impl true
   def handle_info(payload,socket) do
     # the payload that handle_info recvs is the Internal Pub/subs message payload
-    {:ok,done_state} = Map.fetch(payload.payload,:done_state)
-    {:noreply,assign(socket,done_state: done_state)}
+    {:ok,msg_data} = Map.fetch(payload.payload,:data)
+    {:ok,song_media_name} = Map.fetch(msg_data,"song_media_name")
+    {:noreply,assign(socket,done_state: "DONE",song_media_name: song_media_name)}
   end
 
   defp get_songID_from_URL(song_url) do

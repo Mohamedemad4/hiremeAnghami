@@ -1,8 +1,58 @@
 <section class="phx-hero">
-<h1><%= @done_state %></h1>
+
+  <%= if @done_state=="ERROR" do %>
+      <h1 style="color:red">Hmmm.....</h1>
+      <h3 style="color:red"> There was an issue downloading your Song.</h3>
+      <h3 style="color:red"> Maybe check the link you provided?</h3>
+  <% end %>
 
   <form phx-submit="download">
-    <input type="text" name="song_url" value="<%= @song_url %>" placeholder="anghami url"/>
-    <button type="submit" phx-disable-with="In Progress...">Download</button>
-  </form>
+    <input type="text" name="song_url" value="<%= @song_url %>" placeholder="Paste anghami song link"/>
+
+    <%= if @done_state=="IN_PROGRESS" do %>
+      <h1>JS loading bar here!!!</h1>
+    <%end %>
+
+    <%= if @done_state=="ENTER_STH" do %>
+      <button type="submit">Download</button>
+    <%end %>
+
+    <%= if @done_state=="DONE" do %>
+      <a href="/songs/<%= @song_media_name %>">Download</a>
+    <% end %>
+
+</form>
+</section>
+
+<section>
+
+<h2>Why:</h2>
+<ul>
+<li>I was bored</li>
+<li>I wanted to learn <a href="https://phoenixframework.org/">Elixir phoneix</a> and play with <a href="https://www.rabbitmq.com/">RabbitMQ</a></li>
+<li>You guys seem cool</li>
+</ul>
+
+
+<h2>How:</h2>
+<p>
+Service discriptions here....
++ techstack
++ link to github?
+<p>
+
+<h2>So what's your stack?</h2>
+<p>As you can see it's very clearly backend. But hey I am sure we can figure something out</p>
+
+<br/>
+<br/>
+
+<h2>Oh man this is awsome How can we reach ya?</h2>
+<div id="#contact">
+Send your Job offers and DMCA takedown notices to: <a href="mailto:me@hireme-anghami.com">me@hireme-anghami.com</a>
+</div>
+<br/>
+<h3>Anghami call me.</h3>
+<p class="subtitle">also spotify if you see this HMU *wink wink*</p>
+
 </section>

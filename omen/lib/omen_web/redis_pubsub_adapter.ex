@@ -18,26 +18,35 @@ defmodule OmenWeb.RedisPubSubAdapter do
     GenServer.cast(server, {:create, name})
   end
 
+  @impl true
   def init(:ok) do
     {:ok, pubsub} = Redix.PubSub.start_link()
     Redix.PubSub.subscribe(pubsub, "downloaded_songs", self())
-    {:ok, {}}
+    {:ok, {pubsub}}
   end
 
+  @impl true
   def handle_info(msg, state) do
 
-      if Tuple.to_list(msg) |> Enum.member?(:message)  do # ignore the subscription confirmation
+    if Tuple.to_list(msg) |> Enum.member?(:message)  do # ignore the subscription confirmation
 
-        {:ok,message} = msg |> elem(4) |> Map.fetch(:payload) |> elem(1) |> Jason.decode()
-        Map.fetch(message,"song_id") |> elem(1) |> OmenWeb.Endpoint.broadcast("download",%{done_state: "DONE"}) # Publish on the internal pub/sub system that the thing is done
+      {:ok,message} = msg
+      |> elem(4)
+      |> Map.fetch(:payload)
+      |> elem(1)
+      |> Jason.decode()
 
-        IO.inspect(message)
-      else
+      Map.fetch(message,"song_id")
+      |> elem(1)
+      |> OmenWeb.Endpoint.broadcast("download",%{data: message}) # Publish on the internal pub/sub system that the thing is done
 
-        IO.puts("subscribed to downloaded_songs channel")
+      IO.inspect(message)
+    else
 
-      end
+      IO.puts("subscribed to downloaded_songs channel")
 
-      {:noreply, state}
+    end
+
+    {:noreply, state}
   end
 end
