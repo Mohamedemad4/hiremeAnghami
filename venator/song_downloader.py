@@ -75,7 +75,13 @@ class SongDownloader():
  
     # gotta refresh after setting the cookies 
     def _press_play_and_get_MediaLink(self):
+        start_time = time.time()
         while True:
+
+            if time.time()-start_time>60: # timeout after 1min
+                print("TIMED OUT getting song")
+                return False
+
             try:
                 time.sleep(2) # refresh the element reference everytime 
                 button = self.browser.find_element_by_xpath("/html/body/anghami-root/anghami-base/div[1]/div/div/anghami-view/div/div[1]/anghami-collection-header-side/div/div/anghami-collection-header-buttons/div/button[1]") 
@@ -130,11 +136,21 @@ class SongDownloader():
 
             self.browser.get(song_url)
             media_url = self._press_play_and_get_MediaLink()
+            if not media_url:
+
+                redis_conn.publish('downloaded_songs',json.dumps({
+                    "song_media_name":'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3',
+                    "song_state":"FAIL",
+                    "song_id":self._getSongIDFromURL(song_url)
+                }))
+
+                return False 
             self._press_pause()
             self._download_media(media_url,song_url)
 
         redis_conn.publish('downloaded_songs',json.dumps({
             "song_media_name":'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3',
+            "song_state":"OK",
             "song_id":self._getSongIDFromURL(song_url)
         }))
 
