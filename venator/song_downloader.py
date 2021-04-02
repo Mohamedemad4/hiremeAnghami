@@ -19,9 +19,10 @@ import requests
 from seleniumwire import webdriver
 from pyvirtualdisplay import Display
 from config.redis_conn import redis_conn
+from selenium.common.exceptions import TimeoutException
 
 class SongDownloader():
-    def __init__(self):
+    def __init__(self,worker_id):
         
         # start virtual display for selenium
         # https://github.com/dimmg/dockselpy
@@ -32,9 +33,19 @@ class SongDownloader():
             'backend': 'mitmproxy'
         })
 
+        self.browser.request_interceptor = self._sw_interceptor
+
         self.song_dir_path = os.getenv("SONG_DIR_PATH")
         self.browser.get('https://play.anghami.com/') # can't set cookies in an empty document
         self.current_cookie_jar = False
+
+        self.worker_id = worker_id
+
+        redis_conn.set(self.worker_id,"") # reset it form failed jobs or whatever so the "net" is empty and the interceptor can catch fresh stuff
+
+    def _sw_interceptor(self,request):
+        if 'cloudfront' in request.url and 'Key-Pair-Id' in request.url:
+            redis_conn.set(self.worker_id,request.url)
 
     def _set_cookies(self,cookie_jar):
 
@@ -69,28 +80,43 @@ class SongDownloader():
                 time.sleep(2) # refresh the element reference everytime 
                 button = self.browser.find_element_by_xpath("/html/body/anghami-root/anghami-base/div[1]/div/div/anghami-view/div/div[1]/anghami-collection-header-side/div/div/anghami-collection-header-buttons/div/button[1]") 
                 button.click()
-                print("CLICK")
-                time.sleep(2)
-                mediaURL = self.did_media_request()
-                if mediaURL: # did anghami do the media request?
+                print("clicked play")
+                try:
+                    mediaURL = self.browser.wait_for_request('.*m4a\?.*',timeout=5)
                     return mediaURL
+                except TimeoutException:
+                    print("timed out clicking play again")
+                    for r in self.browser.requests: # try looking at the request history
+                        if r.response: # for sent requests that aren't back yet
+                            if r.response.headers['Content-Type']=='video/mp4':
+                                return r.url
+                    
+                    # if this doesn't work check if the interceptor caught anything
+                    ## out of these 3 one usually works!
+                    temp = redis_conn.get(self.worker_id)
+
+                    if temp: 
+                        redis_conn.set(self.worker_id,"")
+                        return temp
+
             except Exception as e:
                 print(e)
-
-    def did_media_request(self):
-        for request in self.browser.requests:
-            # it also comes from this cloudfront domain if nothing else works: d3nhk3h83d1umo.cloudfront.net
-            if request.response and request.response.status_code==206 and request.response.headers['Content-Type']=='video/mp4':
-                return request.url
-        return False
     
     def _getSongIDFromURL(self,song_url): # used internally to keep track of different songs and stuff 
         return song_url.split('/')[4]
 
     def _download_media(self,media_url,song_url):
         song_media_bytes = requests.get(media_url).content
-        full_song_path = os.path.join(self.song_dir_path,'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3')
-        open(full_song_path,'wb+').write(song_media_bytes)
+        full_song_path_mp4 = os.path.join(self.song_dir_path,'Anghami_'+self._getSongIDFromURL(song_url)+'.mp4')
+        open(full_song_path_mp4,'wb+').write(song_media_bytes)
+
+        # convert mp4 to mp3 and remove the mp4 file
+        os.system("ffmpeg -i {0} {1}".format( 
+            full_song_path_mp4,
+            full_song_path_mp4.replace('mp4','mp3')
+        ))
+        os.remove(full_song_path_mp4)
+
         return True
 
     def download_song(self,song_url): # todo: checks to see if we already downloaded a songs and checks to remove the least downloaded one if it gets too tight
@@ -105,5 +131,7 @@ class SongDownloader():
             "song_media_name":'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3',
             "song_id":self._getSongIDFromURL(song_url)
         }))
+
+        # todo stop playback after geting link 
         # todo save how many times a song was requested in redis
         return True
