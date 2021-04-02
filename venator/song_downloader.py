@@ -26,7 +26,7 @@ class SongDownloader():
         
         # start virtual display for selenium
         # https://github.com/dimmg/dockselpy
-        self.display = Display(visible=0, size=(800, 600))
+        self.display = Display(visible=0, size=(1280,1024))
         self.display.start()
 
         self.browser = webdriver.Firefox(seleniumwire_options = {
@@ -119,19 +119,23 @@ class SongDownloader():
 
         return True
 
-    def download_song(self,song_url): # todo: checks to see if we already downloaded a songs and checks to remove the least downloaded one if it gets too tight
-        
-        self._set_cookies(self._pick_cookie_jar()) 
+    def _press_pause(self):
+        print("got link pausing playback")
+        button = self.browser.find_element_by_xpath("/html/body/anghami-root/anghami-base/div[1]/anghami-player/div[2]/div/div[2]/div/div/div/div")
+        button.click()
 
-        self.browser.get(song_url)
-        media_url = self._press_play_and_get_MediaLink()
-        self._download_media(media_url,song_url)
+    def download_song(self,song_url):
+        if not 'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3' in os.listdir(self.song_dir_path): # checks to see if we already have the song downloaded
+            self._set_cookies(self._pick_cookie_jar()) 
+
+            self.browser.get(song_url)
+            media_url = self._press_play_and_get_MediaLink()
+            self._press_pause()
+            self._download_media(media_url,song_url)
 
         redis_conn.publish('downloaded_songs',json.dumps({
             "song_media_name":'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3',
             "song_id":self._getSongIDFromURL(song_url)
         }))
 
-        # todo stop playback after geting link 
-        # todo save how many times a song was requested in redis
         return True
