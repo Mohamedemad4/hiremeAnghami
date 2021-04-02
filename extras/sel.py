@@ -12,14 +12,20 @@ SETUP
 
 import pickle
 import time
+import sys
 from seleniumwire import webdriver
-
+from selenium.common.exceptions import TimeoutException
 browser = webdriver.Firefox(seleniumwire_options = {
     'backend': 'mitmproxy'
 })
 
 
 browser.get('https://play.anghami.com/') # can't set cookies in an empty document
+
+if len(sys.argv)==2:
+    input("Capture Cookies\n[PRESS ENTER]\n")
+    pickle.dump( browser.get_cookies() , open("cookies_"+sys.argv[1]+"_.pkl","wb+"))
+    exit()
 
 cookies = pickle.load(open("cookies.pkl", "rb"))
 for cookie in cookies:
@@ -36,17 +42,13 @@ def PlayAndGetMediaLink():
             button.click()
             print("CLICK")
             time.sleep(2)
-            if didMediaRequest(): # did anghami do the media request?
+            try:
+                r = browser.wait_for_request('.*m4a\?.*',timeout=5)
+                print(r)
                 break
+            except TimeoutException:
+                print("TImED OUT")
         except Exception as e:
             print(e)
-
-def didMediaRequest():
-    for request in browser.requests:
-        # it also comes from this cloudfront domain if nothing else works: d3nhk3h83d1umo.cloudfront.net
-        if request.response and request.response.status_code==206 and request.response.headers['Content-Type']=='video/mp4':
-            print(request.url)
-            return True
-    return False
 
 PlayAndGetMediaLink()
