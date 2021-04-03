@@ -6,12 +6,17 @@
       <h3 style="color:red"> Maybe check the link you provided? Or try again later</h3>
   <% end %>
 
+  <%= if @done_state=="IN_PROGRESS" do %>
+    <center><div class="loader"></div></center>
+    <br/>
+  <%end %>
+
+  <%= if @done_state=="DONE" do %>
+    <h3>All done!</h3>
+  <% end %>
+
   <form phx-submit="download">
     <input type="text" name="song_url" value="<%= @song_url %>" placeholder="Paste anghami song link"/>
-
-    <%= if @done_state=="IN_PROGRESS" do %>
-      <h1>JS loading bar here!!!</h1>
-    <%end %>
 
     <%= if @done_state=="ENTER_STH" do %>
       <button type="submit">Download</button>
