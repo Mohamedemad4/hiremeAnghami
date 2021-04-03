@@ -1,15 +1,7 @@
 import os
 import pika
 
-credentials = pika.PlainCredentials(
-    os.getenv("RABBIT_USER"),
-    os.getenv("RABBIT_PASS")    
-)
-
-conn_params = pika.ConnectionParameters(os.getenv("RABBIT_HOST"),
-                                       os.getenv("RABBIT_PORT"),
-                                       '/',
-                                       credentials)
+conn_params = pika.URLParameters(os.getenv("AMQP_URI"))
 
 #  we shouldn't share connection objs across "threads" or different workers in our case
 # https://pika.readthedocs.io/en/stable/faq.html

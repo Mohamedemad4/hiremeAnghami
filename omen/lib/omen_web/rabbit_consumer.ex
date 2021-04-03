@@ -12,7 +12,7 @@ defmodule OmenWeb.MQConsumer do
 
   def init(:ok) do
     channel_name = "downloaded_songs"
-    {:ok, connection} = AMQP.Connection.open
+    {:ok, connection} = AMQP.Connection.open(get_amqp_uri())
     {:ok, channel} = AMQP.Channel.open(connection)
     AMQP.Queue.declare(channel, channel_name)
     AMQP.Basic.consume(channel, channel_name, nil, no_ack: true) # no need to ACK downloaded_songs
@@ -41,6 +41,10 @@ defmodule OmenWeb.MQConsumer do
 
   def terminate(_reason, state) do
     AMQP.Connection.close(state.connection)
+  end
+
+  defp get_amqp_uri() do
+    System.get_env("AMQP_URI","amqp://guest:guest@localhost:5672")
   end
 
 end

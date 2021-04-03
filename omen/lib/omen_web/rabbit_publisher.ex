@@ -14,7 +14,7 @@ defmodule OmenWeb.MQPublisher do
   ## Server Callbacks
   @impl true
   def init(:ok) do
-    {:ok, connection} = AMQP.Connection.open
+    {:ok, connection} = AMQP.Connection.open(get_amqp_uri())
     {:ok, channel} = AMQP.Channel.open(connection)
     AMQP.Queue.declare(channel, "download_requests")
     {:ok, %{channel: channel, connection: connection} }
@@ -30,4 +30,9 @@ defmodule OmenWeb.MQPublisher do
   def terminate(_reason, state) do
     AMQP.Connection.close(state.connection)
   end
+
+  defp get_amqp_uri() do
+    System.get_env("AMQP_URI","amqp://guest:guest@localhost:5672")
+  end
+
 end

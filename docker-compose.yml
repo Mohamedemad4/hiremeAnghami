@@ -9,34 +9,53 @@
 
 services:
 
+  redis:
+    image: redis
+
+  rabbit:
+    image: rabbitmq:3
+    
+    healthcheck: # rabbit is  a bit slow to startup unlike redis
+        test: rabbitmq-diagnostics -q ping
+        interval: 5s
+        timeout: 10s
+        retries: 5
+
   omen:
+  
     environment:
       - SONG_DIR_PATH=/songs
       - REDIS_HOST=redis
+      - AMQP_URI=amqp://guest:guest@rabbit:5672
+
     build: ./omen
     
     depends_on:
         redis:
           condition: service_started
+        rabbit:
+          condition: service_healthy
 
     ports:
       - "4000:4000"
     volumes:
       - ~/songs:/app/priv/static/songs
 
-  redis:
-    image: redis
-
   venator:
+
     environment:
       - SONG_DIR_PATH=/songs
       - REDIS_HOST=redis
+      - AMQP_URI=amqp://guest:guest@rabbit:5672
+
     build: ./venator
 
     depends_on:
         redis:
           condition: service_started
-          
+        rabbit:
+          condition: service_healthy
+
     privileged: true # for selenium 
     volumes:
       - ~/songs:/songs
