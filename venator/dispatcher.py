@@ -29,8 +29,10 @@ while True:
     try:
         print("VENATOR service up and running")
         channel.start_consuming()
-    except Exception as e:
-        print(e)
+    except KeyboardInterrupt:
         print("stoping VENATOR download_requests consumer")
         channel.stop_consuming()
         connection.close()
+        break
+    except Exception as e:
+        print(e)
