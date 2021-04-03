@@ -17,7 +17,7 @@ services:
     
     healthcheck: # rabbit is  a bit slow to startup unlike redis
         test: rabbitmq-diagnostics -q ping
-        interval: 5s
+        interval: 10s
         timeout: 10s
         retries: 5
 
