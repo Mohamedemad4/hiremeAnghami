@@ -14,7 +14,9 @@ defmodule Omen.Application do
       # Start the Endpoint (http/https)
       OmenWeb.Endpoint,
       OmenWeb.Redix,
-      OmenWeb.RedisPubSubAdapter
+      OmenWeb.MQPublisher,
+      OmenWeb.MQConsumer
+
       # Start a worker by calling: Omen.Worker.start_link(arg)
       # {Omen.Worker, arg}
     ]

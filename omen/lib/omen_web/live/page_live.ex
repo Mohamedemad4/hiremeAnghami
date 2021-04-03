@@ -9,7 +9,7 @@ defmodule OmenWeb.PageLive do
   @impl true
   def handle_event("download", %{"song_url" => song_url}, socket) do
     if validate_song_url(song_url) do
-      OmenWeb.Redix.command(~w(PUBLISH download_requests {"song_url":"#{song_url}"}))
+      OmenWeb.MQPublisher.publish(~w({"song_url":"#{song_url}"}))
 
       IO.puts("LiveView Socket Subcribing to "<>get_songID_from_URL(song_url)) # subscribe to songID on the internal Pub/Sub system
       get_songID_from_URL(song_url) |> OmenWeb.Endpoint.subscribe()
