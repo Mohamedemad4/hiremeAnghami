@@ -12,6 +12,7 @@ SETUP
 
 import os
 import json
+import pika
 import time
 import pickle
 import random
@@ -19,6 +20,7 @@ import requests
 from seleniumwire import webdriver
 from pyvirtualdisplay import Display
 from config.redis_conn import redis_conn
+from config.rabbit_channel import conn_params
 from selenium.common.exceptions import TimeoutException
 
 class SongDownloader():
@@ -40,6 +42,8 @@ class SongDownloader():
         self.current_cookie_jar = False
 
         self.worker_id = worker_id
+        self.mq_conn = pika.BlockingConnection(conn_params)
+        self.mq_channel = self.mq_conn.channel()
 
         redis_conn.set(self.worker_id,"") # reset it form failed jobs or whatever so the "net" is empty and the interceptor can catch fresh stuff
 
@@ -129,29 +133,36 @@ class SongDownloader():
         print("got link pausing playback")
         button = self.browser.find_element_by_xpath("/html/body/anghami-root/anghami-base/div[1]/anghami-player/div[2]/div/div[2]/div/div/div/div")
         button.click()
+    
+    def _publish(self,song_state,song_id):
+        self.mq_channel.basic_publish(
+            exchange='',
+            routing_key='downloaded_songs',
+            body=json.dumps({
+                "song_media_name":'Anghami_'+song_id+'.mp3',
+                "song_state":song_state,
+                "song_id":song_id
+            })
+        )
 
     def download_song(self,song_url):
-        if not 'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3' in os.listdir(self.song_dir_path): # checks to see if we already have the song downloaded
+        song_id = self._getSongIDFromURL(song_url)
+
+        if not 'Anghami_'+song_id+'.mp3' in os.listdir(self.song_dir_path): # checks to see if we already have the song downloaded
+
             self._set_cookies(self._pick_cookie_jar()) 
 
             self.browser.get(song_url)
+            
             media_url = self._press_play_and_get_MediaLink()
-            if not media_url:
-
-                redis_conn.publish('downloaded_songs',json.dumps({
-                    "song_media_name":'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3',
-                    "song_state":"FAIL",
-                    "song_id":self._getSongIDFromURL(song_url)
-                }))
-
-                return False 
             self._press_pause()
+
+            if not media_url:
+                self._publish("FAIL",song_id)
+                return False 
+
             self._download_media(media_url,song_url)
 
-        redis_conn.publish('downloaded_songs',json.dumps({
-            "song_media_name":'Anghami_'+self._getSongIDFromURL(song_url)+'.mp3',
-            "song_state":"OK",
-            "song_id":self._getSongIDFromURL(song_url)
-        }))
+        self._publish("OK",song_id)
 
         return True
