@@ -2,6 +2,8 @@
 - download anghami songs easily on a backend that's built to scale to the moon 🚀📈🌕
 - Uses Elixir, RabbitMQ and Redis worker queues. Fully distributed out of the box! (why? I am gonna run this on a $5 VPS alsan lol)
 
+![hiremeanghami_service_diag.svg](extras/hiremeanghami_service_diag.svg)
+
 # Tech Stack
 - [RabbitMQ](https://www.rabbitmq.com/)
 - [Phoenix Live View](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html)
@@ -13,8 +15,7 @@
 # Services 
 
 ## Venator
-Spawns and controls RQ workers that download the songs.
-The Service communicates with omen using a rabbit MQ message queue.Allowing us to potentially launch N-instances of venator and run RabbitMQ in a load balancer configuration across multiple compute nodes. 
+Spawns and controls Selenium workers that download the songs.
 
 #### API
 - publish a message that looks like `{"song_url":"https://play.anghami.com/song/25770989"}` to queue `download_requests`
@@ -22,6 +23,9 @@ The Service communicates with omen using a rabbit MQ message queue.Allowing us t
 - the song should be located in the `SONG_DIR_PATH` under the name of the `song_media_name` param
 
 ## Omen
-Frontend and basic Backend that talks to Venator and back, Keep the user happy while things are happening in the background.
-This didn't need to be it's own service. But i wanted to learn Phoenix and yeah. worth it.
+Frontend and basic Backend that talks to Venator and back. Keep the user happy while things are happening in the background.
 
+
+# Deployment
+- ```docker-compose up``` this will build and setup everything.
+- open [localhost:4000](http://localhost:4000) in your browser.
